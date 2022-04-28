@@ -1,5 +1,16 @@
-# This script is created by NSG2 beta1
-# <http://wushoupong.googlepages.com/nsg>
+Mac/Simple set bandwidth_ 155Mb
+
+#===================================
+#        Functions Definition        
+#===================================
+proc UniformErr {} {
+    global error_rate
+    set em_ [new ErrorModel]
+    $em_ unit pkt
+    $em_ set rate_ $error_rate
+    $em_ ranvar [new RandomVariable/Uniform]
+    return $em_
+}
 
 #===================================
 #     Simulation parameters setup
@@ -13,11 +24,11 @@ set val(ll)     LL                         ;# link layer type
 set val(ant)    Antenna/OmniAntenna        ;# antenna model
 set val(ifqlen) 50                         ;# max packet in ifq
 set val(nn)     9                          ;# number of mobilenodes
-set val(rp)     DSDV                       ;# routing protocol
+set val(rp)     AODV                       ;# routing protocol
 set val(x)      803                      ;# X dimension of topography
 set val(y)      813                      ;# Y dimension of topography
 set val(stop)   100.0                         ;# time of simulation end
-
+set error_rate 0.00001                   ;#error rate of sending
 #===================================
 #        Initialization        
 #===================================
@@ -53,10 +64,12 @@ $ns node-config -adhocRouting  $val(rp) \
                 -channel       $chan \
                 -topoInstance  $topo \
                 -agentTrace    ON \
-                -routerTrace   ON \
+                -routerTrace   OFF \
                 -macTrace      ON \
-                -movementTrace ON
-
+                -movementTrace OFF \
+		        -IncomingErrProc UniformErr \
+                -OutgoingErrProc UniformErr
+ 
 #===================================
 #        Nodes Definition        
 #===================================
@@ -107,32 +120,37 @@ $n8 set Y_ 461
 $n8 set Z_ 0.0
 $ns initial_node_pos $n8 20
 
-#===================================
-#        Agents Definition        
-#===================================
 
-#===================================
-#        Applications Definition        
-#===================================
+#==============================================
+#      Agents and Applications Definition        
+#==============================================
 #Setup a CBR Application over UDP connection
 set udp0 [new Agent/UDP]
 set cbr0 [new Application/Traffic/CBR]
+set null [new Agent/Null]
+$ns attach-agent $n0 $udp0
+$ns attach-agent $n8 $null
+$ns connect $udp0 $null
 $cbr0 attach-agent $udp0
-$cbr0 set packetSize_ 100
+$cbr0 set packetSize_ 100Kb
 $cbr0 set rate_ 1.0Mb
 $cbr0 set random_ null
 $ns at 1.0 "$cbr0 start"
-$ns at 20.0 "$cbr0 stop"
+$ns at 40.0 "$cbr0 stop"
 
 #Setup a CBR Application over UDP connection
-set udp7 [new Agent/UDP]
+set udp3 [new Agent/UDP]
 set cbr1 [new Application/Traffic/CBR]
-$cbr1 attach-agent $udp7
-$cbr1 set packetSize_ 80
+set null1 [new Agent/Null]
+$ns attach-agent $n7 $null1
+$ns attach-agent $n3 $udp3
+$ns connect $udp3 $null1
+$cbr1 attach-agent $udp3
+$cbr1 set packetSize_ 80Kb
 $cbr1 set rate_ 1.0Mb
 $cbr1 set random_ null
-$ns at 15.0 "$cbr1 start"
-$ns at 40.0 "$cbr1 stop"
+$ns at 30.0 "$cbr1 start"
+$ns at 100.0 "$cbr1 stop"
 
 
 #===================================
