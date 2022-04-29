@@ -171,7 +171,7 @@ def decode_ACK(item):
     return result
 
 
-# In[85]:
+# In[91]:
 
 
 def analysis_tr(bandwidth, error_rate):
@@ -239,12 +239,14 @@ def analysis_tr(bandwidth, error_rate):
 #         elif item[7] == 'ACK':
 #             decoded_lines.append(decode_ACK(item))
 
-
+    print("\n")
     draw_throughput(throughput_time, throughput_packet)
     draw_packet_transfer_ratio(packet_transfer_ratio_time, packet_transfer_ratio_value)
     draw_average_e2e_delay(average_e2e_time, average_e2e_delay)
             
 def draw_throughput(throughput_time, throughput_packet):
+    print("Throughput =", throughput_packet[-1])
+    
     plt.plot(throughput_time, throughput_packet)
     plt.xlabel('Time [s]')
     plt.ylabel('Average throughput [bps]')
@@ -252,6 +254,8 @@ def draw_throughput(throughput_time, throughput_packet):
     plt.show()
     
 def draw_packet_transfer_ratio(packet_transfer_ratio_time, packet_transfer_ratio_value):
+    print("Packet Transfer ratio =", packet_transfer_ratio_value[-1])
+    
     plt.plot(packet_transfer_ratio_time, packet_transfer_ratio_value)
     plt.xlabel('Time [s]')
     plt.ylabel('PDR')
@@ -259,6 +263,8 @@ def draw_packet_transfer_ratio(packet_transfer_ratio_time, packet_transfer_ratio
     plt.show()
     
 def draw_average_e2e_delay(average_e2e_time, average_e2e_delay):
+    print("Average End-to-End delay =", average_e2e_delay[-1])
+        
     plt.plot(average_e2e_time, average_e2e_delay)
     plt.xlabel('Time [s]')
     plt.ylabel('Average E2E delay [s]')
@@ -268,7 +274,7 @@ def draw_average_e2e_delay(average_e2e_time, average_e2e_delay):
 
 # ## Run topology with different parameters
 
-# In[86]:
+# In[92]:
 
 
 bandwidths = [1.5, 55, 155]
@@ -297,8 +303,8 @@ def run_tcl():
 #         run_tcl()
 #         analysis_tr(bandwidth, i)
 
-# create_tcl(1.5, 1)
-# run_tcl()
+create_tcl(1.5, 1)
+run_tcl()
 analysis_tr(1.5, 1)
 
 
