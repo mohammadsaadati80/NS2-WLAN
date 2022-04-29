@@ -14,12 +14,12 @@
 # ### Import Libraries
 # In this part, some of the necessary libraries were imported in order to use their helpful functions.
 
-# In[43]:
+# In[73]:
 
 
-import traceanalyzer as tr
 import codecs
 import os
+import matplotlib.pyplot as plt
 
 
 # ### Defining Constants
@@ -33,7 +33,7 @@ TRACE_FILENAME = "out.tr"
 
 # ## Analysis result
 
-# In[62]:
+# In[84]:
 
 
 def decode_cbr(item):
@@ -43,9 +43,9 @@ def decode_cbr(item):
     result['src_node'] = item[2][1:len(item[2]) - 1]
     result['layer'] = item[3]
     result['flags'] = item[5]
-    result['sequence_number'] = item[6]
+    result['sequence_number'] = int(item[6])
     result['packet_type'] = item[7]
-    result['packet_size'] = item[8]
+    result['packet_size'] = int(item[8])
     result['packet_duration'] = hex(int(item[9][1:], 16))
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
@@ -68,9 +68,9 @@ def decode_AODV(item):
     result['src_node'] = item[2][1:len(item[2]) - 1]
     result['layer'] = item[3]
     result['flags'] = item[5]
-    result['sequence_number'] = item[6]
+    result['sequence_number'] = int(item[6])
     result['packet_type'] = item[7]
-    result['packet_size'] = item[8]
+    result['packet_size'] = int(item[8])
     result['packet_duration'] = hex(int(item[9][1:], 16))
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
@@ -102,9 +102,9 @@ def decode_ARP(item):
     result['src_node'] = item[2][1:len(item[2]) - 1]
     result['layer'] = item[3]
     result['flags'] = item[5]
-    result['sequence_number'] = item[6]
+    result['sequence_number'] = int(item[6])
     result['packet_type'] = item[7]
-    result['packet_size'] = item[8]
+    result['packet_size'] = int(item[8])
     result['packet_duration'] = hex(int(item[9][1:], 16))
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
@@ -126,9 +126,9 @@ def decode_RTS(item):
     result['src_node'] = item[2][1:len(item[2]) - 1]
     result['layer'] = item[3]
     result['flags'] = item[5]
-    result['sequence_number'] = item[6]
+    result['sequence_number'] = int(item[6])
     result['packet_type'] = item[7]
-    result['packet_size'] = item[8]
+    result['packet_size'] = int(item[8])
     result['packet_duration'] = hex(int(item[9][1:], 16))
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
@@ -143,9 +143,9 @@ def decode_CTS(item):
     result['src_node'] = item[2][1:len(item[2]) - 1]
     result['layer'] = item[3]
     result['flags'] = item[5]
-    result['sequence_number'] = item[6]
+    result['sequence_number'] = int(item[6])
     result['packet_type'] = item[7]
-    result['packet_size'] = item[8]
+    result['packet_size'] = int(item[8])
     result['packet_duration'] = hex(int(item[9][1:], 16))
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
@@ -160,9 +160,9 @@ def decode_ACK(item):
     result['src_node'] = item[2][1:len(item[2]) - 1]
     result['layer'] = item[3]
     result['flags'] = item[5]
-    result['sequence_number'] = item[6]
+    result['sequence_number'] = int(item[6])
     result['packet_type'] = item[7]
-    result['packet_size'] = item[8]
+    result['packet_size'] = int(item[8])
     result['packet_duration'] = hex(int(item[9][1:], 16))
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
@@ -171,34 +171,104 @@ def decode_ACK(item):
     return result
 
 
-# In[64]:
+# In[85]:
 
 
-def analysis_tr():
+def analysis_tr(bandwidth, error_rate):
+    print("------------------------------------------------")
+    print("Bandwidth %d" % bandwidth)
+    print("Error rate %d" % error_rate)
     decoded_lines = []
+    
+    throughput_time = []
+    throughput_packet = []
+    cur_throughput_sum = 0
+    
+    packet_transfer_ratio_time = []
+    packet_transfer_ratio_value = []
+    packet_transfer_ratio_s = 0
+    packet_transfer_ratio_r = 0
+    
+    average_e2e_time = []
+    average_e2e_delay = []
+    packet_recive_time = [-1]* 1000000
+    packet_send_time = [-1]* 1000000
+    total_packets = 0
+    packet_sum = 0
     
     with codecs.open(TRACE_FILENAME, "r", "UTF8") as inputFile:
         inputFile=inputFile.readlines()
     for line in inputFile:
         item = line.split(" ");
         if item[7] == 'cbr':
-            decoded_lines.append(decode_cbr(item))
-        elif item[7] == 'AODV':
-            decoded_lines.append(decode_AODV(item))
-        elif item[7] == 'ARP':
-            decoded_lines.append(decode_ARP(item))
-        elif item[7] == 'RTS':
-            decoded_lines.append(decode_RTS(item))
-        elif item[7] == 'CTS':
-            decoded_lines.append(decode_CTS(item))
-        elif item[7] == 'ACK':
-            decoded_lines.append(decode_ACK(item))
-       
+            decoded_cbr = decode_cbr(item)
+            decoded_lines.append(decoded_cbr)
+            
+            if decoded_cbr['action'] == 'r':
+                cur_throughput_sum += decoded_cbr['packet_size']
+                throughput_time.append(decoded_cbr['time'])
+                throughput_packet.append(cur_throughput_sum / decoded_cbr['time'])
+                
+                packet_transfer_ratio_time.append(decoded_cbr['time'])
+                packet_transfer_ratio_r += 1
+                packet_transfer_ratio_value.append(packet_transfer_ratio_r/packet_transfer_ratio_s)
+                
+                if decoded_cbr['sequence_number'] != 0:
+                    packet_recive_time[decoded_cbr['sequence_number']] = decoded_cbr['time']
+                    total_packets += 1
+                    packet_sum += packet_recive_time[decoded_cbr['sequence_number']] - packet_send_time[decoded_cbr['sequence_number']]
+                    average_e2e_time.append(decoded_cbr['time'])
+                    average_e2e_delay.append(packet_sum/total_packets)
+
+            if decoded_cbr['action'] == 's':
+                packet_transfer_ratio_time.append(decoded_cbr['time'])
+                packet_transfer_ratio_s += 1
+                packet_transfer_ratio_value.append(packet_transfer_ratio_r/packet_transfer_ratio_s)
+                
+                if decoded_cbr['sequence_number'] != 0:
+                    packet_send_time[decoded_cbr['sequence_number']] = decoded_cbr['time']
+                            
+#         elif item[7] == 'AODV':
+#             decoded_lines.append(decode_AODV(item))
+#         elif item[7] == 'ARP':
+#             decoded_lines.append(decode_ARP(item))
+#         elif item[7] == 'RTS':
+#             decoded_lines.append(decode_RTS(item))
+#         elif item[7] == 'CTS':
+#             decoded_lines.append(decode_CTS(item))
+#         elif item[7] == 'ACK':
+#             decoded_lines.append(decode_ACK(item))
+
+
+    draw_throughput(throughput_time, throughput_packet)
+    draw_packet_transfer_ratio(packet_transfer_ratio_time, packet_transfer_ratio_value)
+    draw_average_e2e_delay(average_e2e_time, average_e2e_delay)
+            
+def draw_throughput(throughput_time, throughput_packet):
+    plt.plot(throughput_time, throughput_packet)
+    plt.xlabel('Time [s]')
+    plt.ylabel('Average throughput [bps]')
+    plt.title('Average throughput')
+    plt.show()
+    
+def draw_packet_transfer_ratio(packet_transfer_ratio_time, packet_transfer_ratio_value):
+    plt.plot(packet_transfer_ratio_time, packet_transfer_ratio_value)
+    plt.xlabel('Time [s]')
+    plt.ylabel('PDR')
+    plt.title('Packet Delivery ratio [PDR]')
+    plt.show()
+    
+def draw_average_e2e_delay(average_e2e_time, average_e2e_delay):
+    plt.plot(average_e2e_time, average_e2e_delay)
+    plt.xlabel('Time [s]')
+    plt.ylabel('Average E2E delay [s]')
+    plt.title('End-to-End delay')
+    plt.show()
 
 
 # ## Run topology with different parameters
 
-# In[50]:
+# In[86]:
 
 
 bandwidths = [1.5, 55, 155]
@@ -221,67 +291,15 @@ def create_tcl(bandwidth, i):
 def run_tcl():
     os.system('ns topt.tcl')
      
-for bandwidth in bandwidths:
-    for i in range(1,11):
-        create_tcl(bandwidth, i)
-        run_tcl()
-#         analysis_tr()
+# for bandwidth in bandwidths:
+#     for i in range(1,11):
+#         create_tcl(bandwidth, i)
+#         run_tcl()
+#         analysis_tr(bandwidth, i)
 
-
-# ## Throughput
-
-# In[5]:
-
-
-#Throughput
-throughput1=tr.Throughput(TRACE_FILENAME,'33')
-throughput1.sample()#eedelay2.sample(1.5) for sampling with step=1.5
-throughput1.plot()
-#getting data
-time=throughput1.time_sample
-throughput=throughput1.throughput_sample
-idx=0
-for instant in time:
-    print(instant,' ',throughput[idx]) 
-    idx+=1
-
-
-# ## Packet Transfer Ratio
-
-# In[6]:
-
-
-#Packet Delivery Ratio
-pdr1=tr.Pdr(TRACE_FILENAME,'33')
-pdr1.sample()
-pdr1.plot('sr-') #plotting with argument
-#getting data
-time=pdr1.time_sample
-pdr=pdr1.pdr_sample
-idx=0
-for instant in time:
-    print(instant,' ',pdr[idx]) 
-    idx+=1
-
-
-# ## Average End-to-End Delay
-
-# In[10]:
-
-
-#end-to-end delay
-# eedelay1=tr.Eedelay(TRACE_FILENAME,'33')
-eedelay2=tr.Eedelay(TRACE_FILENAME,'33')
-eedelay2.sample()#eedelay2.sample(1.5) for sampling with step=1.5.
-eedelay2.plot()
-# eedelay1.plot()
-#getting data
-time=eedelay2.time_sample
-eedelay=eedelay2.eedelay_sample
-idx=0
-for instant in time:
-    print(instant,' ',eedelay[idx]) 
-    idx+=1
+# create_tcl(1.5, 1)
+# run_tcl()
+analysis_tr(1.5, 1)
 
 
 # In[ ]:
