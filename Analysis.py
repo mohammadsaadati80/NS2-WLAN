@@ -14,7 +14,7 @@
 # ### Import Libraries
 # In this part, some of the necessary libraries were imported in order to use their helpful functions.
 
-# In[73]:
+# In[1]:
 
 
 import codecs
@@ -25,15 +25,15 @@ import matplotlib.pyplot as plt
 # ### Defining Constants
 # In this part, constant values are defined in order to make the code more readable and more flexible to change.
 
-# In[8]:
+# In[2]:
 
 
 TRACE_FILENAME = "out.tr"
 
 
-# ## Analysis result
+# ## Decode Trace file
 
-# In[84]:
+# In[3]:
 
 
 def decode_cbr(item):
@@ -171,13 +171,15 @@ def decode_ACK(item):
     return result
 
 
-# In[91]:
+# ## Analysis Trace file
+
+# In[4]:
 
 
 def analysis_tr(bandwidth, error_rate):
     print("------------------------------------------------")
-    print("Bandwidth %d" % bandwidth)
-    print("Error rate %d" % error_rate)
+    print("Bandwidth = %.1f" % bandwidth)
+    print("Error rate =",error_rate)
     decoded_lines = []
     
     throughput_time = []
@@ -274,7 +276,7 @@ def draw_average_e2e_delay(average_e2e_time, average_e2e_delay):
 
 # ## Run topology with different parameters
 
-# In[92]:
+# In[5]:
 
 
 bandwidths = [1.5, 55, 155]
@@ -293,19 +295,22 @@ def create_tcl(bandwidth, i):
     f = open("topo.tcl", "w")
     f.write(s)
     f.close()
+    return error_rate
     
 def run_tcl():
-    os.system('ns topt.tcl')
+    os.system('rm out.tr')
+    os.system('rm out.nam')
+    os.system('ns topo.tcl')
      
-# for bandwidth in bandwidths:
-#     for i in range(1,11):
-#         create_tcl(bandwidth, i)
-#         run_tcl()
-#         analysis_tr(bandwidth, i)
+for bandwidth in bandwidths:
+    for i in range(1,11):
+        error_rate = create_tcl(bandwidth, i)
+        run_tcl()
+        analysis_tr(bandwidth, error_rate)
 
-create_tcl(1.5, 1)
-run_tcl()
-analysis_tr(1.5, 1)
+# create_tcl(1.5, 1)
+# run_tcl()
+# analysis_tr(1.5, 1)
 
 
 # In[ ]:
