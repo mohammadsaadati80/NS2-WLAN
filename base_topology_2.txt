@@ -102,7 +102,7 @@ $ns attach-agent $n8 $null
 $ns connect $udp0 $null
 $cbr0 attach-agent $udp0
 $cbr0 set packetSize_ 100Kb
-$cbr0 set rate_ 1.0Mb
+$cbr0 set rate_ 100Kb
 $cbr0 set random_ null
 $ns at 1.0 "$cbr0 start"
 $ns at 40.0 "$cbr0 stop"
@@ -116,7 +116,7 @@ $ns attach-agent $n3 $udp3
 $ns connect $udp3 $null1
 $cbr1 attach-agent $udp3
 $cbr1 set packetSize_ 80Kb
-$cbr1 set rate_ 1.0Mb
+$cbr1 set rate_ 100Kb
 $cbr1 set random_ null
 $ns at 30.0 "$cbr1 start"
 $ns at 100.0 "$cbr1 stop"
