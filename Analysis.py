@@ -10,6 +10,12 @@
 
 # ## Introduction
 # The purpose of this assignment is to get acquainted with the **NS2** simulation tool and to analyze some network parameters when using a **wireless network**.
+# 
+# In this computer assignment, we simulate the wireless connection of 9 nodes,
+# including two sender nodes (A and D) and two receiver nodes (L and H).
+# We use 802.11 protocol which will decide some attributes of our WLAN
+# implementation and ways for MAC (Media Access Control) with some protocols
+# for physical layers.
 
 # ### Import Libraries
 # In this part, some of the necessary libraries were imported in order to use their helpful functions.
@@ -58,7 +64,6 @@ def decode_cbr(item):
     result['destination_node_port_number'] = destination_node_port_number
     result['ip_header_ttl'] = int(item[16])
     result['ip_of_next_hop'] = int(item[17][:len(item[17]) - 1])
-#     print(result)
     return result
     
 def decode_AODV(item):
@@ -92,7 +97,6 @@ def decode_AODV(item):
     result['source_sequence_number'] = item[24][:len(item[24]) - 1]
     is_RREQ_packet = item[25][1:].split(')')
     result['is_RREQ_packet'] = is_RREQ_packet[0]
-    print(result)
     return result
     
 def decode_ARP(item):
@@ -116,7 +120,6 @@ def decode_ARP(item):
 #     result['destination_node_ip'] = destination_node_ip
 #     result['destination_node_port_number'] = destination_node_port_number
 #     result['ip_header_ttl'] = int(item[16])
-#     print(result)
     return result
     
 def decode_RTS(item):
@@ -133,7 +136,6 @@ def decode_RTS(item):
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
     result['packet_mac_type'] = int(item[12][:len(item[12]) - 1])
-#     print(result)
     return result
     
 def decode_CTS(item):
@@ -150,7 +152,6 @@ def decode_CTS(item):
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
     result['packet_mac_type'] = int(item[12][:len(item[12]) - 1])
-#     print(result)
     return result
     
 def decode_ACK(item):
@@ -167,7 +168,6 @@ def decode_ACK(item):
     result['destination_mac_address'] = hex(int(item[10], 16))
     result['source_mac_address'] = int(item[11])
     result['packet_mac_type'] = int(item[12][:len(item[12]) - 1])
-#     print(result)
     return result
 
 
@@ -200,6 +200,7 @@ def analysis_tr(bandwidth, error_rate):
     
     with codecs.open(TRACE_FILENAME, "r", "UTF8") as inputFile:
         inputFile=inputFile.readlines()
+        
     for line in inputFile:
         item = line.split(" ");
         if item[7] == 'cbr':
@@ -276,7 +277,7 @@ def draw_average_e2e_delay(average_e2e_time, average_e2e_delay):
 
 # ## Run topology with different parameters
 
-# In[5]:
+# In[10]:
 
 
 bandwidths = [1.5, 55, 155]
@@ -311,10 +312,4 @@ for bandwidth in bandwidths:
 # create_tcl(1.5, 1)
 # run_tcl()
 # analysis_tr(1.5, 1)
-
-
-# In[ ]:
-
-
-
 
