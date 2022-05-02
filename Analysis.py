@@ -185,6 +185,9 @@ def analysis_tr(bandwidth, error_rate):
     throughput_time = []
     throughput_packet = []
     cur_throughput_sum = 0
+    throughput_packet_x = []
+    throughput_send_packet = []
+    cur_send_packect = 0
     
     packet_transfer_ratio_time = []
     packet_transfer_ratio_value = []
@@ -207,7 +210,7 @@ def analysis_tr(bandwidth, error_rate):
             decoded_cbr = decode_cbr(item)
             decoded_lines.append(decoded_cbr)
             
-            if decoded_cbr['action'] == 'r':
+            if decoded_cbr['action'] == 'r':  # recive
                 cur_throughput_sum += decoded_cbr['packet_size']
                 throughput_time.append(decoded_cbr['time'])
                 throughput_packet.append(cur_throughput_sum / decoded_cbr['time'])
@@ -223,7 +226,11 @@ def analysis_tr(bandwidth, error_rate):
                     average_e2e_time.append(decoded_cbr['time'])
                     average_e2e_delay.append(packet_sum/total_packets)
 
-            if decoded_cbr['action'] == 's':
+            if decoded_cbr['action'] == 's':  # send
+                cur_send_packect += decoded_cbr['packet_size']
+                throughput_packet_x.append(cur_send_packect)
+                throughput_send_packet.append(cur_throughput_sum / (decoded_cbr['time'] * cur_send_packect))
+                
                 packet_transfer_ratio_time.append(decoded_cbr['time'])
                 packet_transfer_ratio_s += 1
                 packet_transfer_ratio_value.append(packet_transfer_ratio_r/packet_transfer_ratio_s)
@@ -243,10 +250,18 @@ def analysis_tr(bandwidth, error_rate):
 #             decoded_lines.append(decode_ACK(item))
 
     print("\n")
+    draw_throughput_send_packet(throughput_packet_x, throughput_send_packet)
     draw_throughput(throughput_time, throughput_packet)
     draw_packet_transfer_ratio(packet_transfer_ratio_time, packet_transfer_ratio_value)
     draw_average_e2e_delay(average_e2e_time, average_e2e_delay)
             
+def draw_throughput_send_packet(throughput_packet_x, throughput_send_packet):
+    plt.plot(throughput_packet_x, throughput_send_packet)
+    plt.xlabel('Packet Kb')
+    plt.ylabel('throughput [bps]')
+    plt.title('Send packet throughput')
+    plt.show()
+        
 def draw_throughput(throughput_time, throughput_packet):
     print("Throughput =", throughput_packet[-1])
     
@@ -277,7 +292,7 @@ def draw_average_e2e_delay(average_e2e_time, average_e2e_delay):
 
 # ## Run topology with different parameters
 
-# In[10]:
+# In[5]:
 
 
 bandwidths = [1.5, 55, 155]
